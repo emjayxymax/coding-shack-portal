@@ -1,0 +1,30 @@
+[
+  {
+    "id": 1,
+    "category": "arduino",
+    "keywords": "arduino, uno, board, microcontroller",
+    "match": "OR",
+    "answer": "Arduino is an open-source electronics platform. The Arduino UNO is the most popular board for beginners."
+  },
+  {
+    "id": 2,
+    "category": "robotics", 
+    "keywords": "robot, robotics, machine",
+    "match": "OR",
+    "answer": "A robot is a programmable machine that can sense its environment and perform tasks automatically."
+  },
+  {
+    "id": 3,
+    "category": "coding",
+    "keywords": "droidscript, javascript, app, code",
+    "match": "OR", 
+    "answer": "DroidScript lets you code Android apps with JavaScript. Use app.CreateLayout and app.AddLayout to start."
+  },
+  {
+    "id": 4,
+    "category": "general",
+    "keywords": "hello, hi, hey, yo",
+    "match": "OR",
+    "answer": "Hello! I'm Coding Shack AI. Ask me about Arduino, Robots, or DroidScript coding."
+  }
+]
