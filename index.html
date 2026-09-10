@@ -1,1 +1,169 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Admin Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <style id="theme-style"></style>
+</head>
+<body>
+  <div class="header">
+    <img id="logo_url" src="" alt="Logo" onerror="this.style.display='none'">
+    <h1 id="school_name">Admin Panel</h1>
+  </div>
 
+  <!-- TAB BUTTONS -->
+  <div class="tabs">
+    <button onclick="showTab('settings')">⚙️ Settings</button>
+    <button onclick="showTab('students')">👨‍🎓 Students</button>
+    <button onclick="showTab('announce')">📢 Announcements</button>
+    <button onclick="showTab('ai')">🧠 AI Brain</button>
+  </div>
+
+  <!-- 1. SETTINGS TAB -->
+  <div id="settings" class="tab card">
+    <h2>Brand Settings</h2>
+    <label>School Name</label>
+    <input id="s_school_name">
+    <label>Logo URL - Google Drive Direct Link</label>
+    <input id="s_logo_url">
+    <label>Primary Color</label>
+    <input id="s_primary_color" type="color">
+    <label>Background Color</label>
+    <input id="s_background_color" type="color">
+    <label>Card Color</label>
+    <input id="s_card_color" type="color">
+    <button onclick="saveSettings()">Save Settings</button>
+    <p id="settings_msg"></p>
+  </div>
+
+  <!-- 2. STUDENTS TAB -->
+  <div id="students" class="tab card" style="display:none;">
+    <h2>Manage Students</h2>
+    <div id="students_table">Loading...</div>
+  </div>
+
+  <!-- 3. ANNOUNCEMENTS TAB -->
+  <div id="announce" class="tab card" style="display:none;">
+    <h2>Post Announcement</h2>
+    <input id="ann_title" placeholder="Title: Exam on Friday">
+    <textarea id="ann_body" placeholder="Body: Come with calculator"></textarea>
+    <button onclick="postAnnouncement()">Post</button>
+    <h3>Current Announcements</h3>
+    <div id="ann_list"></div>
+  </div>
+
+  <!-- 4. AI BRAIN TAB -->
+  <div id="ai" class="tab card" style="display:none;">
+    <h2>Teach AI Brain</h2>
+    <input id="ai_question" placeholder="Question: what is a loop">
+    <textarea id="ai_answer" placeholder="Answer: A loop repeats code..."></textarea>
+    <button onclick="addAI()">Add to AI Brain</button>
+    <h3>Current Q&A</h3>
+    <div id="ai_list"></div>
+  </div>
+
+<script>
+// IMPORTANT: Replace these with YOUR sheet "Publish to web" CSV links
+const SHEET_LINKS = {
+  settings: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWAaHGWvyI1J0LxQLv0aAAJqkm9f2K4utuc-pS245zaTYtbpQyTEK1sQ0PWCcoGgr8Ov5pBg8GnTzk/pub?gid=0&single=true&output=csv",
+  ai_brain: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWAaHGWvyI1J0LxQLv0aAAJqkm9f2K4utuc-pS245zaTYtbpQyTEK1sQ0PWCcoGgr8Ov5pBg8GnTzk/pub?gid=1245120774&single=true&output=csv", 
+  announcements: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWAaHGWvyI1J0LxQLv0aAAJqkm9f2K4utuc-pS245zaTYtbpQyTEK1sQ0PWCcoGgr8Ov5pBg8GnTzk/pub?gid=209132930&single=true&output=csv",
+  students: "https://docs.google.com/spreadsheets/d/e/2PACX-1vQWAaHGWvyI1J0LxQLv0aAAJqkm9f2K4utuc-pS245zaTYtbpQyTEK1sQ0PWCcoGgr8Ov5pBg8GnTzk/pub?gid=1498053858&single=true&output=csv"
+};
+// IMPORTANT: To SAVE data you need Google Apps Script WebApp URL. 
+// For now this loads data. Saving = manual edit in sheet for v1
+
+let settings = {}, studentsData = [], aiBrainData = [], announcementsData = [];
+
+async function loadAll() {
+  const [setRes, sRes, aRes, annRes] = await Promise.all([
+    fetch(SHEET_LINKS.settings),
+    fetch(SHEET_LINKS.students),
+    fetch(SHEET_LINKS.ai_brain),
+    fetch(SHEET_LINKS.announcements)
+  ]);
+
+  const settingsRaw = (await setRes.text()).split('\n').slice(1);
+  settingsRaw.forEach(r => {
+    const [key, value] = r.split(',');
+    if(key) settings[key.trim()] = value.trim();
+  });
+
+  studentsData = (await sRes.text()).split('\n').slice(1).map(r => r.split(','));
+  aiBrainData = (await aRes.text()).split('\n').slice(1).map(r => r.split(','));
+  announcementsData = (await annRes.text()).split('\n').slice(1).map(r => r.split(','));
+
+  applyTheme();
+  loadSettingsForm();
+  loadStudentsTable();
+  loadAnnList();
+  loadAIList();
+}
+
+function applyTheme() {
+  document.getElementById('school_name').innerText = settings.school_name + " Admin" || 'Admin Panel';
+  document.getElementById('logo_url').src = settings.logo_url || '';
+
+  const css = `
+    body { font-family: Arial; padding: 20px; background: #111; color: white; max-width: 900px; margin: auto; }
+   .header { display: flex; align-items: center; gap: 15px; margin-bottom: 20px; }
+   .header img { max-width: 50px; }
+   .tabs { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+   .tabs button { flex: 1; min-width: 120px; }
+   .card { background: #1a1a1a; padding: 20px; border-radius: 12px; margin: 15px 0; }
+    input, textarea, button { padding: 12px; margin: 5px 0; font-size: 16px; border-radius: 8px; border: none; width: 100%; box-sizing: border-box; }
+    textarea { height: 80px; }
+    button { background: #00ff88; color: black; font-weight: bold; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; }
+    td, th { border: 1px solid #333; padding: 8px; text-align: left; }
+    h1, h2, h3 { color: #00ff88; }
+  `;
+  document.getElementById('theme-style').innerText = css;
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+  document.getElementById(tab).style.display = 'block';
+}
+
+function loadSettingsForm() {
+  document.getElementById('s_school_name').value = settings.school_name || '';
+  document.getElementById('s_logo_url').value = settings.logo_url || '';
+  document.getElementById('s_primary_color').value = settings.primary_color || '#00ff88';
+  document.getElementById('s_background_color').value = settings.background_color || '#0a0a0a';
+  document.getElementById('s_card_color').value = settings.card_color || '#1a1a1a';
+}
+
+function saveSettings() {
+  alert("For v1: Copy these values and paste into your SETTINGS sheet manually.\n\nTo auto-save we need to connect Google Apps Script. Want me to set that up next?");
+}
+
+function loadStudentsTable() {
+  let html = '<table><tr><th>ID</th><th>Name</th><th>Grade</th><th>Status</th><th>Notes</th></tr>';
+  studentsData.forEach(s => {
+    html += `<tr><td>${s[0]}</td><td>${s[1]}</td><td><input value="${s[4]}" style="width:60px"></td><td>${s[3]}</td><td>${s[6]}</td></tr>`;
+  });
+  html += '</table>';
+  document.getElementById('students_table').innerHTML = html;
+}
+
+function loadAnnList() {
+  document.getElementById('ann_list').innerHTML = announcementsData.map(a => `<p><b>${a[0]}</b>: ${a[1]}</p>`).join('');
+}
+
+function loadAIList() {
+  document.getElementById('ai_list').innerHTML = aiBrainData.map(a => `<p><b>Q:</b> ${a[0]}<br><b>A:</b> ${a[1]}</p>`).join('');
+}
+
+function postAnnouncement() {
+  alert("For v1: Add this row to ANNOUNCEMENTS sheet manually.\nTitle: " + document.getElementById('ann_title').value);
+}
+
+function addAI() {
+  alert("For v1: Add this Q&A to AI_BRAIN sheet manually.");
+}
+
+loadAll();
+</script>
+</body>
+</html>
