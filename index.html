@@ -166,4 +166,61 @@ function addAI() {
 loadAll();
 </script>
 </body>
+</html>   .tabs button { flex: 1; min-width: 120px; }
+   .card { background: #1a1a1a; padding: 20px; border-radius: 12px; margin: 15px 0; }
+    input, textarea, button { padding: 12px; margin: 5px 0; font-size: 16px; border-radius: 8px; border: none; width: 100%; box-sizing: border-box; }
+    textarea { height: 80px; }
+    button { background: #00ff88; color: black; font-weight: bold; cursor: pointer; }
+    table { width: 100%; border-collapse: collapse; }
+    td, th { border: 1px solid #333; padding: 8px; text-align: left; }
+    h1, h2, h3 { color: #00ff88; }
+  `;
+  document.getElementById('theme-style').innerText = css;
+}
+
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.style.display = 'none');
+  document.getElementById(tab).style.display = 'block';
+}
+
+function loadSettingsForm() {
+  document.getElementById('s_school_name').value = settings.school_name || '';
+  document.getElementById('s_logo_url').value = settings.logo_url || '';
+  document.getElementById('s_primary_color').value = settings.primary_color || '#00ff88';
+  document.getElementById('s_background_color').value = settings.background_color || '#0a0a0a';
+  document.getElementById('s_card_color').value = settings.card_color || '#1a1a1a';
+}
+
+function saveSettings() {
+  alert("For v1: Copy these values and paste into your SETTINGS sheet manually.\n\nTo auto-save we need to connect Google Apps Script. Want me to set that up next?");
+}
+
+function loadStudentsTable() {
+  let html = '<table><tr><th>ID</th><th>Name</th><th>Grade</th><th>Status</th><th>Notes</th></tr>';
+  studentsData.forEach(s => {
+    html += `<tr><td>${s[0]}</td><td>${s[1]}</td><td><input value="${s[4]}" style="width:60px"></td><td>${s[3]}</td><td>${s[6]}</td></tr>`;
+  });
+  html += '</table>';
+  document.getElementById('students_table').innerHTML = html;
+}
+
+function loadAnnList() {
+  document.getElementById('ann_list').innerHTML = announcementsData.map(a => `<p><b>${a[0]}</b>: ${a[1]}</p>`).join('');
+}
+
+function loadAIList() {
+  document.getElementById('ai_list').innerHTML = aiBrainData.map(a => `<p><b>Q:</b> ${a[0]}<br><b>A:</b> ${a[1]}</p>`).join('');
+}
+
+function postAnnouncement() {
+  alert("For v1: Add this row to ANNOUNCEMENTS sheet manually.\nTitle: " + document.getElementById('ann_title').value);
+}
+
+function addAI() {
+  alert("For v1: Add this Q&A to AI_BRAIN sheet manually.");
+}
+
+loadAll();
+</script>
+</body>
 </html>
